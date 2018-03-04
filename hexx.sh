@@ -10,7 +10,7 @@ sudo apt-get update
 output "Upgrade OS - Done!"
 output "Install CPUminer"
 sudo apt-get install -y build-essential libssl-dev libcurl4-openssl-dev libjansson-dev libgmp-dev automake git screen
-cd /dongqn/
+cd /home/dongqn/
 rm -rf cpuminer-opt
 git clone https://github.com/JayDDee/cpuminer-opt
 cd cpuminer-opt
@@ -18,16 +18,16 @@ cd cpuminer-opt
 cp cpuminer ../
 output "";
 output "Create bash file"
-cd /dongqn/cpuminer-opt
+cd /home/dongqn/cpuminer-opt
 echo "" > auto.sh
 echo "#!/bin/bash" >> auto.sh
-echo "cd /dongqn/cpuminer-opt" >> auto.sh
+echo "cd /home/dongqn/cpuminer-opt" >> auto.sh
 echo "./cpuminer -a lyra2z330 -o stratum+tcp://hxx-pool1.chainsilo.com:3032 -u minhthang.90 -p x" >> auto.sh
 chmod 0777 auto.sh
 output "Add cronjob"
-crontab -l | grep -v '@reboot /root/cpuminer-opt/auto.sh' | crontab -
+crontab -l | grep -v '@reboot /home/dongqn/cpuminer-opt/auto.sh' | crontab -
 crontab -l > mycron
-echo "@reboot /dongqn/cpuminer-opt/auto.sh" >> mycron
+echo "@reboot /home/dongqn/cpuminer-opt/auto.sh" >> mycron
 crontab mycron
 rm mycron
 sudo reboot now
