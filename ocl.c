@@ -37,9 +37,8 @@
 #include "algorithm/neoscrypt.h"
 #include "algorithm/pluck.h"
 #include "algorithm/yescrypt.h"
-#include "algorithm/lyra2rev2.h"
-#include "algorithm/lyra2Z.h"
 #include "algorithm/lyra2z330.h"
+#include "algorithm/lyra2Z.h"
 #include "algorithm/lyra2h.h"
 #include "algorithm/equihash.h"
 
@@ -646,7 +645,7 @@ _clState *initCl(unsigned int gpu, char *name, size_t nameSize, algorithm_t *alg
 
   // Lyra2re v2 TC
   else if (
-((cgpu->algorithm.type == ALGO_LYRA2REV2) || (cgpu->algorithm.type == ALGO_LYRA2REV2))
+((cgpu->algorithm.type == ALGO_LYRA2Z330) || (cgpu->algorithm.type == ALGO_LYRA2Z330))
 && !cgpu->opt_tc) {
     size_t glob_thread_count;
     long max_int;
@@ -950,7 +949,7 @@ out:
       applog(LOG_DEBUG, "yescrypt buffer sizes: %lu RW, %lu R", (unsigned long)bufsize, (unsigned long)readbufsize);
       // scrypt/n-scrypt
     }
-    else if (((cgpu->algorithm.type == ALGO_LYRA2REV2) )) {
+    else if (((cgpu->algorithm.type == ALGO_LYRA2Z330) )) {
       /* The scratch/pad-buffer needs 32kBytes memory per thread. */
       bufsize = LYRA_SCRATCHBUF_SIZE * cgpu->thread_concurrency;
       buf1size = 4* 8 * cgpu->thread_concurrency; //matrix
@@ -959,7 +958,7 @@ out:
       * 80 bytes only. */
       readbufsize = 80;
 
-      applog(LOG_DEBUG, "lyra2REv2 buffer sizes: %lu RW, %lu RW", (unsigned long)bufsize, (unsigned long)buf1size);
+      applog(LOG_DEBUG, "lyra2z330 buffer sizes: %lu RW, %lu RW", (unsigned long)bufsize, (unsigned long)buf1size);
       // scrypt/n-scrypt
     }
     else {
@@ -1008,7 +1007,7 @@ out:
 	return NULL;
       }
     }
-    else if (((cgpu->algorithm.type == ALGO_LYRA2REV2) )) {
+    else if (((cgpu->algorithm.type == ALGO_LYRA2Z330) )) {
       // need additionnal buffers
       clState->buffer1 = clCreateBuffer(clState->context, CL_MEM_READ_WRITE, buf1size, NULL, &status);
       if (status != CL_SUCCESS && !clState->buffer1) {
