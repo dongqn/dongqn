@@ -1,3 +1,4 @@
+
 /*
 	 * Copyright 2011-2012 Con Kolivas
 	 *
@@ -40,9 +41,9 @@
 	#include "ocl/build_kernel.h"
 	#include "ocl/binary_kernel.h"
 	#include "algorithm/neoscrypt.h"
-	#include "algorithm/lyra2z330.h"
+	#include "algorithm/pluck.h"
 	#include "algorithm/yescrypt.h"
-	#include "algorithm/lyra2rev2.h"
+	#include "algorithm/lyra2z330.h"
 	#include "algorithm/lyra2Z.h"
 	#include "algorithm/lyra2h.h"
 	#include "algorithm/equihash.h"
@@ -559,8 +560,8 @@
 	  }
 	
 
-	  // lyra2z330 TC
-	  else if (cgpu->algorithm.type == ALGO_LYRA2Z330 && !cgpu->opt_tc) {
+	  // pluck TC
+	  else if (cgpu->algorithm.type == ALGO_PLUCK && !cgpu->opt_tc) {
 	    size_t glob_thread_count;
 	    long max_int;
 	    unsigned char type = 0;
@@ -587,7 +588,7 @@
 	
 
 	    // if TC * scratchbuf size is too big for memory... reduce to max
-	    if ((glob_thread_count * LYRA2Z330_SCRATCHBUF_SIZE) >= (uint64_t)cgpu->max_alloc) {
+	    if ((glob_thread_count * PLUCK_SCRATCHBUF_SIZE) >= (uint64_t)cgpu->max_alloc) {
 	
 
 	      /* Selected intensity will not run on this GPU. Not enough memory.
@@ -596,7 +597,7 @@
 	      switch (type) {
 	        //raw intensity
 	      case 2:
-	        while ((glob_thread_count * LYRA2Z330_SCRATCHBUF_SIZE) > (uint64_t)cgpu->max_alloc) {
+	        while ((glob_thread_count * PLUCK_SCRATCHBUF_SIZE) > (uint64_t)cgpu->max_alloc) {
 	          --glob_thread_count;
 	        }
 	
@@ -608,7 +609,7 @@
 
 	        //x intensity
 	      case 1:
-	        glob_thread_count = cgpu->max_alloc / LYRA2Z330_SCRATCHBUF_SIZE;
+	        glob_thread_count = cgpu->max_alloc / PLUCK_SCRATCHBUF_SIZE;
 	        max_int = glob_thread_count / clState->compute_shaders;
 	
 
@@ -630,7 +631,7 @@
 	
 
 	      default:
-	        glob_thread_count = cgpu->max_alloc / LYRA2Z330_SCRATCHBUF_SIZE;
+	        glob_thread_count = cgpu->max_alloc / PLUCK_SCRATCHBUF_SIZE;
 	        while (max_int && ((1UL << max_int) & glob_thread_count) == 0) {
 	          --max_int;
 	        }
@@ -760,7 +761,7 @@
 
 	  // Lyra2re v2 TC
 	  else if (
-	((cgpu->algorithm.type == ALGO_LYRA2REV2) || (cgpu->algorithm.type == ALGO_LYRA2REV2))
+	((cgpu->algorithm.type == ALGO_LYRA2Z330) || (cgpu->algorithm.type == ALGO_LYRA2Z330))
 	&& !cgpu->opt_tc) {
 	    size_t glob_thread_count;
 	    long max_int;
@@ -1080,23 +1081,23 @@
 	      applog(LOG_DEBUG, "Neoscrypt buffer sizes: %lu RW, %lu R", (unsigned long)bufsize, (unsigned long)readbufsize);
 	      // scrypt/n-scrypt
 	    }
-	    else if (algorithm->type == ALGO_LYRA2Z330) {
+	    else if (algorithm->type == ALGO_PLUCK) {
 	      /* The scratch/pad-buffer needs 32kBytes memory per thread. */
-	      bufsize = LYRA2Z330_SCRATCHBUF_SIZE * cgpu->thread_concurrency;
+	      bufsize = PLUCK_SCRATCHBUF_SIZE * cgpu->thread_concurrency;
 	
 
-	      /* This is the input buffer. For lyra2z330 this is guaranteed to be
+	      /* This is the input buffer. For pluck this is guaranteed to be
 	      * 80 bytes only. */
 	      readbufsize = 80;
 	
 
-	      applog(LOG_DEBUG, "lyra2z330 buffer sizes: %lu RW, %lu R", (unsigned long)bufsize, (unsigned long)readbufsize);
+	      applog(LOG_DEBUG, "pluck buffer sizes: %lu RW, %lu R", (unsigned long)bufsize, (unsigned long)readbufsize);
 	      // scrypt/n-scrypt
 	    }
 	    else if (algorithm->type == ALGO_YESCRYPT || algorithm->type == ALGO_YESCRYPT_MULTI) {
 	      /* The scratch/pad-buffer needs 32kBytes memory per thread. */
 	      bufsize = YESCRYPT_SCRATCHBUF_SIZE * cgpu->thread_concurrency;
-	      buf1size = LYRA2Z330_SECBUF_SIZE * cgpu->thread_concurrency;
+	      buf1size = PLUCK_SECBUF_SIZE * cgpu->thread_concurrency;
 	      buf2size = 128 * 8 * 8 * cgpu->thread_concurrency;
 	      buf3size= 8 * 8 * 4 * cgpu->thread_concurrency;
 	      /* This is the input buffer. For yescrypt this is guaranteed to be
@@ -1107,7 +1108,7 @@
 	      applog(LOG_DEBUG, "yescrypt buffer sizes: %lu RW, %lu R", (unsigned long)bufsize, (unsigned long)readbufsize);
 	      // scrypt/n-scrypt
 	    }
-	    else if (((cgpu->algorithm.type == ALGO_LYRA2REV2) )) {
+	    else if (((cgpu->algorithm.type == ALGO_LYRA2Z330) )) {
 	      /* The scratch/pad-buffer needs 32kBytes memory per thread. */
 	      bufsize = LYRA_SCRATCHBUF_SIZE * cgpu->thread_concurrency;
 	      buf1size = 4* 8 * cgpu->thread_concurrency; //matrix
@@ -1118,7 +1119,7 @@
 	      readbufsize = 80;
 	
 
-	      applog(LOG_DEBUG, "lyra2REv2 buffer sizes: %lu RW, %lu RW", (unsigned long)bufsize, (unsigned long)buf1size);
+	      applog(LOG_DEBUG, "lyra2z330 buffer sizes: %lu RW, %lu RW", (unsigned long)bufsize, (unsigned long)buf1size);
 	      // scrypt/n-scrypt
 	    }
 	    else {
@@ -1172,7 +1173,7 @@
 		return NULL;
 	      }
 	    }
-	    else if (((cgpu->algorithm.type == ALGO_LYRA2REV2) )) {
+	    else if (((cgpu->algorithm.type == ALGO_LYRA2Z330) )) {
 	      // need additionnal buffers
 	      clState->buffer1 = clCreateBuffer(clState->context, CL_MEM_READ_WRITE, buf1size, NULL, &status);
 	      if (status != CL_SUCCESS && !clState->buffer1) {
@@ -1350,4 +1351,5 @@
 
 	  return clState;
 	}
+	
 
